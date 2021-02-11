@@ -1,40 +1,318 @@
 <!doctype html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+    <title>reveal.js</title>
 
-		<link rel="stylesheet" href="dist/reset.css">
-		<link rel="stylesheet" href="dist/reveal.css">
-		<link rel="stylesheet" href="dist/theme/black.css" id="theme">
+    <link rel="stylesheet" href="dist/reset.css">
+    <link rel="stylesheet" href="dist/reveal.css">
+    <link rel="stylesheet" href="dist/theme/black.css" id="theme">
 
-		<!-- Theme used for syntax highlighted code -->
-		<link rel="stylesheet" href="plugin/highlight/monokai.css" id="highlight-theme">
-	</head>
-	<body>
-		<div class="reveal">
-			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
-			</div>
-		</div>
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css" id="highlight-theme">
+    <style>
+        .left {
+            text-align: left;
+        }
 
-		<script src="dist/reveal.js"></script>
-		<script src="plugin/notes/notes.js"></script>
-		<script src="plugin/markdown/markdown.js"></script>
-		<script src="plugin/highlight/highlight.js"></script>
-		<script>
-			// More info about initialization & config:
-			// - https://revealjs.com/initialization/
-			// - https://revealjs.com/config/
-			Reveal.initialize({
-				hash: true,
+        table {
+            width: 100%;
+            font-size: x-large;
+        }
 
-				// Learn about plugins: https://revealjs.com/plugins/
-				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
-			});
-		</script>
-	</body>
+        code {
+            font-size: large;
+        }
+    </style>
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section class="left">
+            <h4>Agenda</h4>
+            <ul>
+                <li>Axon</li>
+                <li>Usage in Dagobert application</li>
+                <li>Lessons learned</li>
+            </ul>
+            <p>This presentation is about sharing insights, for a deepdive into Axon see the <a href="https://docs.axoniq.io/reference-guide/">reference
+                guide</a></p>
+        </section>
+        <section>
+            <section><h1>Axon</h1></section>
+            <section class="left"><p>Based on the principles of:</p>
+                <ul>
+                    <li>Command Query Responsibility Segregation (CQRS)</li>
+                    <li>Domain-Driven Design (DDD)</li>
+                    <li>Event-Driven Architecture (EDA)</li>
+                </ul>
+                <p>In addition, Axon supports Event Sourcing</p>
+            </section>
+            <section class="left">
+                <p>Axon can be used in both:</p>
+                <ul>
+                    <li>Large monolithic applications - internal structure is essential to keep the monolith adaptable</li>
+                    <li>Microservices, where the distributed nature of the system adds complexity</li>
+                </ul>
+            </section>
+            <section class="left">
+                <p style="font-style: italic">Build a decent monolith first, that is hard enough</p>
+                <p>Allard Buijze (CTO & Founder of AxonIQ)</p>
+            </section>
+            <section class="left">
+                <p>Furthermore AxonIQ states:</p>
+                <ul>
+                    <li>Evolving to microservices is a journey</li>
+                    <li>Use component based design within the monolith</li>
+                    <li>Axon provides location transparency within the monolith by using explicit messaging for Commands, Events and Queries</li>
+                    <li>Move out parts of the monolith into separately deployable units (microservices), but only because of non-functional
+                        requirements
+                    </li>
+                </ul>
+            </section>
+            <section class="left">
+                <h4>Command Query Responsibility Segregation (CQRS)</h4>
+                <p>Execution of a command should be segregated from queries returning state:</p>
+                <img src="images/cqrs.png" height="200"/>
+                <p>Enables supporting different non-functional requirements for reads and writes</p>
+            </section>
+            <section class="left">
+                <h4>Domain Driven Design</h4>
+                <p>Very well described by Eric Evans in his book Domain Driven Design - Tackling Complexity in the Heart of Software, strongly
+                    recommended for any developer or architect.</p>
+                <p>Component based development requires identification of bounded contexts</p>
+                <p>Axon makes intensive use of the concept of Aggregates: a set of entities that work together, always consistent - a transactional
+                    consistency boundary</p>
+            </section>
+            <section class="left">
+                <h4>Event-Driven Architecture</h4>
+                <p>Events are not enough, Commands and Queries are also essential, better name would be Message-Driven Architecture</p>
+                <p>Axon provides Location Transparency by using explicit messaging for Commands, Events and Queries</p>
+                <p>Asynchronous (where applicable) and loose coupling (where applicable)</p>
+            </section>
+            <section class="left">
+                <h4>Event Sourcing</h4>
+                <p>The state of a business entity is persisted as a time-ordered sequence of events</p>
+                <ul>
+                    <li>Enables replay of events, e.g. to create different View Models (aka Projections or Query Models)</li>
+                    <li>Natural audit trail</li>
+                    <li>Analytics</li>
+                    <li>Temporal Reports</li>
+                </ul>
+            </section>
+        </section>
+        <section>
+            <section><h1>Dagobert</h1></section>
+            <section><h4>Axon features vs Dagobert application requirements</h4></section>
+            <section class="left">
+                <h4>CQRS & Event-Driven Architecture</h4>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Dagobert requirement</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Location transparency: potential requirement for separately deployable units (microservices)</td>
+                        <td>Yes</td>
+                    </tr>
+                    <tr>
+                        <td>Support for separate non-functional requirements for reads and writes</td>
+                        <td>No</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+            <section class="left">
+                <h4>Event Sourcing</h4>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Dagobert requirement</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Naturalized audit trail</td>
+                        <td>All Kafka events already need to be stored for idempotency. User actions are too limited too warrant Event Sourcing
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Analytics</td>
+                        <td>No</td>
+                    </tr>
+                    <tr>
+                        <td>Design flexibility in business logic and views</td>
+                        <td>Not really</td>
+                    </tr>
+                    <tr>
+                        <td>Temporal reports</td>
+                        <td>No</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+<!--            <section>TODO diagram of our commands and events</section>-->
+            <section>Example Command
+                <pre><code style="max-height: 600px;" data-trim><script type="text/template">
+public void addActivity(...) {
+    final String key = String.join("/", "ActivityCommissionAggregate",
+        contracteeId.toString(), periodId.toString(), commissionConfigId.toString()
+    );
+    UUID activityCommissionAggregateId =
+        UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8));
+
+    AddActivityCommand addActivityCommand =
+        new AddActivityCommand(activityCommissionAggregateId, contracteeId, periodId, fee.getMoney());
+    commandGateway.sendAndWait(addActivityCommand);
+}
+                </script></code></pre>
+            </section>
+            <section>Example Aggregate
+                <pre><code style="max-height: 600px;" data-trim><script type="text/template">
+@Aggregate
+public class ActivityCommissionAggregate {
+    @AggregateIdentifier
+    private UUID activityCommissionAggregateId;
+    private UUID contracteeId;
+    private UUID periodId;
+    private UUID commissionConfigId;
+    private long numberOfActivities = 0;
+    private Money feePerActivity;
+
+    @CommandHandler
+    @CreationPolicy(AggregateCreationPolicy.CREATE_IF_MISSING)
+    public void handle(AddActivityCommand command) {
+        final long newNumberOfActivities = this.numberOfActivities + 1;
+
+        AggregateLifecycle.apply(new ActivityCommissionRegisteredEvent(
+            command.getActivityCommissionId(),
+            command.getContracteeId(),
+            command.getPeriodId(),
+            command.getFeePerActivity(),
+            newNumberOfActivities
+        ));
+    }
+
+    @EventSourcingHandler
+    public void on(ActivityCommissionRegisteredEvent event) {
+        this.numberOfActivities = event.getNumberOfActivities();
+    }
+
+}
+                </script></code></pre>
+            </section>
+            <section>Example Projection
+                <pre><code style="max-height: 600px;" data-trim><script type="text/template">
+@Service
+@AllArgsConstructor
+public class ActivityCommissionProjection {
+
+    @EventHandler
+    public void on(ActivityCommissionRegisteredEvent event) {
+        ...
+        activityCommissionProjectionRepository.save(..);
+    );
+
+}
+                </script></code></pre>
+            </section>
+            <section>Axon DOMAIN_EVENT_ENTRY table</section>
+<!--            <section>Example Saga</section>-->
+        </section>
+        <section>
+            <section><h1>Lessons learned</h1></section>
+            <section class="left">
+                <p>Architect designed 6 separately deployable components</p>
+                <p>Using Axon this decision could be postponed</p>
+                <p>Currently one deployable component is still sufficient, saving lots of overhead in development</p>
+            </section>
+            <section class="left">
+                Takes a while to get to grips with all the features of Axon, but for a large part inherent to event driven and asynchronous
+                processing.
+            </section>
+            <section class="left">
+                <p>Axon does not provide support for idempotency out of the box</p>
+                <p>Idempotency would be needed at each place of decoupling</p>
+                <p>For Dagobert it was decided to make each end to end process single-threaded and one database transaction</p>
+                <p>That way the effort to implement and test idempotency can be postponed until a need for separate deployment of a component</p>
+            </section>
+            <section class="left">
+                <p>Axon does not provide out of the box support for creation of a non-random aggregate id</p>
+                <p>A non-random aggregate id is needed when an event (command) arrives from an external party that has no knowledge of the aggregate</p>
+                <p>For Dagobert we use name UUIDs:</p>
+                <pre><code data-trim><script type="text/template">
+                    public static UUID buildId(UUID contracteeId, UUID periodId, UUID commissionConfigId) {
+                        final String key = String.join("/", NAMESPACE, contracteeId.toString(), periodId.toString(), commissionConfigId.toString());
+                        return UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8));
+                    }
+                    </script></code></pre>
+            </section>
+            <section class="left">
+                Axon did/does not provide out-of-the-box seamless integration with event buses like Kafka
+            </section>
+            <section class="left">
+                <p>Easy to add aggregates, because they are just serialized to the same table</p>
+                <p>But with Event Sourcing, changing aggregates means conversion of events, manipulating the serialized XML</p>
+                <p>Can only really be properly tested with an existing store with all versions of events</p>
+            </section>
+            <section class="left">
+                <p>Using Event Sourcing, it is pretty easy to rewind time by just deleting the last events</p>
+                <p>Can be helpful in testing</p>
+            </section>
+            <section class="left">
+                <p>Don't make components too small i.e. don't try to decouple everything</p>
+                <p>But at the same time don't make the components too large...</p>
+            </section>
+            <section class="left">
+                For deletions of events in case of event sourcing, e.g. to comply with GDPR, the commercial Axon Data Protection module is available
+            </section>
+            <section class="left">
+                For highly scalable mission-critical, enterprise use cases you will probably require the commercial AxonServer Enterprise product
+            </section>
+        </section>
+        <section class="left">
+            <h4>References</h4>
+            <ul>
+                <li>
+                    <a href="https://cdn2.hubspot.net/hubfs/6746794/whitepaper%20DDD,%20CQRS%20and%20Event%20Sourcing%20Explained.pdf?hsCtaTracking=6714ef84-d83d-44d7-a2b2-a7cbb94f6a80%7Cdcd7892d-012f-4cb4-9eb7-47bc327a5c04">DDD,
+                        CQRS and Event Sourcing Explained</a></li>
+                <li><a href="https://docs.axoniq.io/reference-guide/">Axon reference guide</a></li>
+                <li>
+                    <a href="https://matfrs2.github.io/RS2/predavanja/literatura/Avram%20A,%20Marinescu%20F.%20-%20Domain%20Driven%20Design%20Quickly.pdf">Domain-Driven
+                        Design Quickly</a></li>
+            </ul>
+        </section>
+        <section><h1>Questions?</h1></section>
+    </div>
+</div>
+
+<script src="dist/reveal.js"></script>
+<script src="plugin/notes/notes.js"></script>
+<script src="plugin/markdown/markdown.js"></script>
+<script src="plugin/highlight/highlight.js"></script>
+<script>
+    // More info about initialization & config:
+    // - https://revealjs.com/initialization/
+    // - https://revealjs.com/config/
+    Reveal.initialize({
+        hash: true,
+        // width: 2000,
+        // height: 1000,
+        // margin: -0.11,
+
+        // Bounds for smallest/largest possible scale to apply to content
+        // minScale: 0.2,
+        // maxScale: 2.0,
+
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+    });
+</script>
+</body>
 </html>
