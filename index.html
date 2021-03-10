@@ -64,10 +64,10 @@
             <section class="left">
                 <p>Furthermore AxonIQ states:</p>
                 <ul>
-                    <li>Evolving to microservices is a journey</li>
-                    <li>Use component based design within the monolith</li>
-                    <li>Axon provides location transparency within the monolith by using explicit messaging for Commands, Events and Queries</li>
-                    <li>Move out parts of the monolith into separately deployable units (microservices), but only because of non-functional
+                    <li class="fragment fade-left">Evolving to microservices is a journey</li>
+                    <li class="fragment fade-left">Use component based design within the monolith</li>
+                    <li class="fragment fade-left">Axon provides location transparency within the monolith by using explicit messaging for Commands, Events and Queries</li>
+                    <li class="fragment fade-left">Move out parts of the monolith into separately deployable units (microservices), but only because of non-functional
                         requirements
                     </li>
                 </ul>
@@ -80,26 +80,26 @@
             </section>
             <section class="left">
                 <h4>Domain Driven Design</h4>
-                <p>Very well described by Eric Evans in his book Domain Driven Design - Tackling Complexity in the Heart of Software, strongly
+                <p class="fragment fade-left">Very well described by Eric Evans in his book Domain Driven Design - Tackling Complexity in the Heart of Software, strongly
                     recommended for any developer or architect.</p>
-                <p>Component based development requires identification of bounded contexts</p>
-                <p>Axon makes intensive use of the concept of Aggregates: a set of entities that work together, always consistent - a transactional
+                <p class="fragment fade-left">Component based development requires identification of bounded contexts</p>
+                <p class="fragment fade-left">Axon makes intensive use of the concept of Aggregates: a set of entities that work together, always consistent - a transactional
                     consistency boundary</p>
             </section>
             <section class="left">
                 <h4>Event-Driven Architecture</h4>
-                <p>Events are not enough, Commands and Queries are also essential, better name would be Message-Driven Architecture</p>
-                <p>Axon provides Location Transparency by using explicit messaging for Commands, Events and Queries</p>
-                <p>Asynchronous (where applicable) and loose coupling (where applicable)</p>
+                <p class="fragment fade-left">Events are not enough, Commands and Queries are also essential, better name would be Message-Driven Architecture</p>
+                <p class="fragment fade-left">Axon provides Location Transparency by using explicit messaging for Commands, Events and Queries</p>
+                <p class="fragment fade-left">Asynchronous (where applicable) and loose coupling (where applicable)</p>
             </section>
             <section class="left">
                 <h4>Event Sourcing</h4>
                 <p>The state of a business entity is persisted as a time-ordered sequence of events</p>
                 <ul>
-                    <li>Enables replay of events, e.g. to create different View Models (aka Projections or Query Models)</li>
-                    <li>Natural audit trail</li>
-                    <li>Analytics</li>
-                    <li>Temporal Reports</li>
+                    <li class="fragment fade-left">Enables replay of events, e.g. to create different View Models (aka Projections or Query Models)</li>
+                    <li class="fragment fade-left">Natural audit trail</li>
+                    <li class="fragment fade-left">Analytics</li>
+                    <li class="fragment fade-left">Temporal Reports</li>
                 </ul>
             </section>
         </section>
@@ -139,7 +139,7 @@
                     <tbody>
                     <tr>
                         <td>Naturalized audit trail</td>
-                        <td>All Kafka events already need to be stored for idempotency. User actions are too limited too warrant Event Sourcing
+                        <td>All Kafka events already need to be stored for idempotency. User actions are too limited to warrant Event Sourcing
                         </td>
                     </tr>
                     <tr>
@@ -157,7 +157,6 @@
                     </tbody>
                 </table>
             </section>
-<!--            <section>TODO diagram of our commands and events</section>-->
             <section>Example Command
                 <pre><code style="max-height: 600px;" data-trim><script type="text/template">
 public void addActivity(...) {
@@ -209,8 +208,6 @@ public class ActivityCommissionAggregate {
             </section>
             <section>Example Projection
                 <pre><code style="max-height: 600px;" data-trim><script type="text/template">
-@Service
-@AllArgsConstructor
 public class ActivityCommissionProjection {
 
     @EventHandler
@@ -223,14 +220,47 @@ public class ActivityCommissionProjection {
                 </script></code></pre>
             </section>
             <section>Axon DOMAIN_EVENT_ENTRY table</section>
-<!--            <section>Example Saga</section>-->
+            <section>Example Saga
+                <pre><code style="max-height: 600px;" data-trim><script type="text/template">
+@Saga
+public class SettlingSaga {
+    private UUID settlementId;
+    private String requester;
+    private Money total = Money.zero(CurrencyUnit.EUR);
+
+    @StartSaga
+    @SagaEventHandler(associationProperty = "settlementId")
+    public void on(SettlementStartedEvent settlementStartedEvent) {
+        this.settlementId = settlementStartedEvent.getSettlementId();
+        ...
+    }
+
+    @SagaEventHandler(associationProperty = "settlementId")
+    public void on(SpecificationConstructedEvent specificationConstructedEvent) {
+        ...
+    }
+
+    @EndSaga
+    @SagaEventHandler(associationProperty = "reviewProposalId")
+    public void on(ReviewProposalApprovedEvent approvedEvent) {
+        ...
+    }
+
+    @EndSaga
+    @SagaEventHandler(associationProperty = "reviewProposalId")
+    public void on(ReviewProposalRejectedEvent rejectedEvent) {
+        ...
+    }
+}
+                </script></code></pre>
+            </section>
         </section>
         <section>
             <section><h1>Lessons learned</h1></section>
             <section class="left">
                 <p>Architect designed 6 separately deployable components</p>
-                <p>Using Axon this decision could be postponed</p>
-                <p>Currently one deployable component is still sufficient, saving lots of overhead in development</p>
+                <p class="fragment fade-left">Using Axon this decision could be postponed</p>
+                <p class="fragment fade-left">Currently one deployable component is still sufficient, saving lots of overhead in development</p>
             </section>
             <section class="left">
                 Takes a while to get to grips with all the features of Axon, but for a large part inherent to event driven and asynchronous
@@ -238,15 +268,15 @@ public class ActivityCommissionProjection {
             </section>
             <section class="left">
                 <p>Axon does not provide support for idempotency out of the box</p>
-                <p>Idempotency would be needed at each place of decoupling</p>
-                <p>For Dagobert it was decided to make each end to end process single-threaded and one database transaction</p>
-                <p>That way the effort to implement and test idempotency can be postponed until a need for separate deployment of a component</p>
+                <p class="fragment fade-left">Idempotency would be needed at each place of decoupling</p>
+                <p class="fragment fade-left">For Dagobert it was decided to make each end to end process single-threaded and one database transaction</p>
+                <p class="fragment fade-left">That way the effort to implement and test idempotency can be postponed until a need for separate deployment of a component</p>
             </section>
             <section class="left">
                 <p>Axon does not provide out of the box support for creation of a non-random aggregate id</p>
-                <p>A non-random aggregate id is needed when an event (command) arrives from an external party that has no knowledge of the aggregate</p>
-                <p>For Dagobert we use name UUIDs:</p>
-                <pre><code data-trim><script type="text/template">
+                <p class="fragment fade-left">A non-random aggregate id is needed when an event (command) arrives from an external party that has no knowledge of the aggregate</p>
+                <p class="fragment fade-left">For Dagobert we use name UUIDs:</p>
+                <pre  class="fragment fade-left"><code data-trim><script type="text/template">
                     public static UUID buildId(UUID contracteeId, UUID periodId, UUID commissionConfigId) {
                         final String key = String.join("/", NAMESPACE, contracteeId.toString(), periodId.toString(), commissionConfigId.toString());
                         return UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8));
@@ -258,22 +288,22 @@ public class ActivityCommissionProjection {
             </section>
             <section class="left">
                 <p>Easy to add aggregates, because they are just serialized to the same table</p>
-                <p>But with Event Sourcing, changing aggregates means conversion of events, manipulating the serialized XML</p>
-                <p>Can only really be properly tested with an existing store with all versions of events</p>
+                <p class="fragment fade-left">But with Event Sourcing, changing aggregates means conversion of events, manipulating the serialized XML</p>
+                <p class="fragment fade-left">Can only really be properly tested with an existing store with all versions of events</p>
             </section>
             <section class="left">
                 <p>Using Event Sourcing, it is pretty easy to rewind time by just deleting the last events</p>
-                <p>Can be helpful in testing</p>
+                <p class="fragment fade-left">Can be helpful in testing</p>
             </section>
             <section class="left">
                 <p>Don't make components too small i.e. don't try to decouple everything</p>
-                <p>But at the same time don't make the components too large...</p>
+                <p class="fragment fade-left">But at the same time don't make the components too large...</p>
             </section>
             <section class="left">
-                For deletions of events in case of event sourcing, e.g. to comply with GDPR, the commercial Axon Data Protection module is available
+                For erasure of events in case of event sourcing, e.g. to comply with GDPR, the commercial Axon Data Protection module is available
             </section>
             <section class="left">
-                For highly scalable mission-critical, enterprise use cases you will probably require the commercial AxonServer Enterprise product
+                For highly scalable mission-critical, enterprise use cases, you will probably require the commercial AxonServer Enterprise product
             </section>
         </section>
         <section class="left">
